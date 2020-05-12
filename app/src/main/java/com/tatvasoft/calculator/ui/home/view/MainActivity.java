@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void singleClear() {
-        if (binding.tvResult.getText().length() > 0) {
+        if (binding.tvMain.getText().length() > 0) {
             CharSequence currentText = binding.tvMain.getText();
             if (currentText.length() > 0) {
                 binding.tvMain.setText(currentText.subSequence(0, currentText.length() - 1));
@@ -150,8 +150,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             Expression expression = new ExpressionBuilder(binding.tvMain.getText().toString()).build();
             Double result = expression.evaluate();
+            long longResult =  (new Double(result)).longValue();;
+            if(result .equals(Double.valueOf(longResult)))
+                binding.tvResult.setText(String.valueOf(longResult));
+            else
             binding.tvResult.setText(String.valueOf(result));
-
         } catch (Exception e) {
             Log.d("Exception", " message : " + e.getMessage());
         }
