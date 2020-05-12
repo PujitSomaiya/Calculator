@@ -20,20 +20,19 @@ import com.tatvasoft.calculator.util.CommonUtils;
 
 import java.text.DecimalFormat;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ActivityMainBinding binding;
     private static final char ADDITION = '+';
     private static final char SUBTRACTION = '-';
     private static final char MULTIPLICATION = '*';
     private static final char DIVISION = '/';
+    private static final char REMAINDER = '%';
     private char CURRENT_ACTION;
     private double valueOne = Double.NaN;
     private double valueTwo;
     private DecimalFormat decimalFormat;
-    private TextView tvMain;
-    private  boolean Addition, Subtract, Multiplication, Division, mRemainder, decimal;
-    private  double input1 = 0, input2 = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressLint("SetTextI18n")
     private void edNumbers(String value) {
-        binding.edMain.setText(binding.edMain.getText()+value);
+        binding.edMain.setText(binding.edMain.getText() + value);
     }
 
     private void initListeners() {
@@ -83,8 +82,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @SuppressLint("SetTextI18n")
     @Override
     public void onClick(View view) {
-        int id=view.getId();
-        switch (id){
+        int id = view.getId();
+        switch (id) {
             case R.id.btnZero:
                 edNumbers("0");
                 break;
@@ -123,46 +122,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btnMinus:
                 computeCalculation();
-                CURRENT_ACTION = ADDITION;
+                CURRENT_ACTION = SUBTRACTION;
                 binding.tvMain.setText(decimalFormat.format(valueOne) + "-");
                 binding.edMain.setText(null);
                 break;
             case R.id.btnMul:
                 computeCalculation();
-                CURRENT_ACTION = ADDITION;
+                CURRENT_ACTION = MULTIPLICATION;
                 binding.tvMain.setText(decimalFormat.format(valueOne) + "*");
                 binding.edMain.setText(null);
                 break;
             case R.id.btnDivide:
                 computeCalculation();
-                CURRENT_ACTION = ADDITION;
+                CURRENT_ACTION = DIVISION;
                 binding.tvMain.setText(decimalFormat.format(valueOne) + "/");
                 binding.edMain.setText(null);
                 break;
             case R.id.btnModule:
                 computeCalculation();
-                CURRENT_ACTION = ADDITION;
+                CURRENT_ACTION = REMAINDER;
                 binding.tvMain.setText(decimalFormat.format(valueOne) + "%");
                 binding.edMain.setText(null);
                 break;
             case R.id.btnEquals:
                 computeCalculation();
-                binding.tvMain.setText(binding.tvMain.getText().toString() +
-                        decimalFormat.format(valueTwo) + " = " + decimalFormat.format(valueOne));
+                binding.tvMain.setText(decimalFormat.format(valueOne));
                 valueOne = Double.NaN;
                 CURRENT_ACTION = '0';
                 break;
             case R.id.btnClear:
-                if(binding.edMain.getText().length() > 0) {
-                    CharSequence currentText = binding.edMain.getText();
-                    binding.edMain.setText(currentText.subSequence(0, currentText.length()-1));
-                }
-                else {
-                    valueOne = Double.NaN;
-                    valueTwo = Double.NaN;
-                    binding.edMain.setText("");
-                    binding.tvMain.setText("");
-                }
+                valueOne = Double.NaN;
+                valueTwo = Double.NaN;
+                binding.edMain.setText("");
+                binding.tvMain.setText("");
                 break;
             case R.id.btnDot:
 //                if (decimal) {
@@ -172,28 +164,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    decimal = true;
 //                }
                 break;
-
+            case R.id.btnSingleClear:
+                if (binding.edMain.getText().length() > 0) {
+                    CharSequence currentText = binding.edMain.getText();
+                    binding.edMain.setText(currentText.subSequence(0, currentText.length() - 1));
+                }
+                break;
         }
     }
 
     private void computeCalculation() {
-        if(!Double.isNaN(valueOne)) {
+        if (!Double.isNaN(valueOne)) {
+            if (CommonUtils.isEmptyEditText(binding.edMain)){
+                Toast.makeText(getApplicationContext(),"Add value",Toast.LENGTH_SHORT).show();
+            }else {
                 valueTwo = Double.parseDouble(binding.edMain.getText().toString());
                 binding.edMain.setText(null);
-                if(CURRENT_ACTION == ADDITION)
+                if (CURRENT_ACTION == ADDITION)
                     valueOne = this.valueOne + valueTwo;
-                else if(CURRENT_ACTION == SUBTRACTION)
+                else if (CURRENT_ACTION == SUBTRACTION)
                     valueOne = this.valueOne - valueTwo;
-                else if(CURRENT_ACTION == MULTIPLICATION)
+                else if (CURRENT_ACTION == MULTIPLICATION)
                     valueOne = this.valueOne * valueTwo;
-                else if(CURRENT_ACTION == DIVISION)
+                else if (CURRENT_ACTION == DIVISION)
                     valueOne = this.valueOne / valueTwo;
             }
-        else {
+        } else {
             try {
                 valueOne = Double.parseDouble(binding.edMain.getText().toString());
+            } catch (Exception e) {
             }
-            catch (Exception e){}
         }
     }
 }
