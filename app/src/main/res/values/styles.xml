@@ -8,30 +8,30 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="btnNumber" >
+
+
+    <style name="btnEquals">
+        <item name="android:background">@color/colorDarkGrey</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_margin">0.5dp</item>
+    </style>
+
+    <style name="btnSymbol">
+        <item name="android:background">@color/colorGrey</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:textColor">@color/colorGreen</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_margin">0.5dp</item>
+    </style>
+    <style name="btnNumber">
+        <item name="android:background">@color/colorLightGrey</item>
+        <item name="android:textSize">21sp</item>
         <item name="android:textColor">@android:color/black</item>
         <item name="android:gravity">center</item>
-        <item name="android:layout_margin">@dimen/_5sdp</item>
-        <item name="background">@drawable/bg_btn</item>
-        <item name="backgroundTint">@color/colorLightGrey</item>
-        <item name="android:textSize">@dimen/_12ssp</item>
+        <item name="android:layout_margin">0.5dp</item>
     </style>
 
-    <style name="btnSymbol" >
-        <item name="android:textColor">@color/colorGreen</item>
-        <item name="android:layout_margin">@dimen/_5sdp</item>
-        <item name="backgroundTint">@color/colorGrey</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textSize">@dimen/_12ssp</item>
-    </style>
-
-    <style name="btnEquals" >
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:layout_margin">@dimen/_5sdp</item>
-
-        <item name="backgroundTint">@color/colorDarkGrey</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textSize">@dimen/_12ssp</item>
-    </style>
 
 </resources>
