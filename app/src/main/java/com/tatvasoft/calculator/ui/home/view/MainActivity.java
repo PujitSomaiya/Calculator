@@ -9,6 +9,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.tatvasoft.calculator.R;
 import com.tatvasoft.calculator.databinding.ActivityMainBinding;
@@ -31,26 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initControls() {
         initListeners();
-        setCalculation();
-    }
 
-    private void setCalculation() {
-        binding.tvResult.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
     }
 
     private void initListeners() {
@@ -75,7 +57,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         binding.btnSingleClear.setOnClickListener(this);
         binding.btnModule.setOnClickListener(this);
-        binding.btnIn.setOnClickListener(this);
+        binding.btnStart.setOnClickListener(this);
+        binding.btnEnd.setOnClickListener(this);
         binding.btnClear.setOnClickListener(this);
     }
 
@@ -85,69 +68,81 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = view.getId();
         switch (id) {
             case R.id.btnZero:
-                appendOnExpression("0",true);
+                appendOnExpression("0", true);
                 break;
             case R.id.btnOne:
-                appendOnExpression("1",true);
+                appendOnExpression("1", true);
                 break;
             case R.id.btnTwo:
-                appendOnExpression("2",true);
+                appendOnExpression("2", true);
                 break;
             case R.id.btnThree:
-                appendOnExpression("3",true);
+                appendOnExpression("3", true);
                 break;
             case R.id.btnFour:
-                appendOnExpression("4",true);
+                appendOnExpression("4", true);
                 break;
             case R.id.btnFive:
-                appendOnExpression("5",true);
+                appendOnExpression("5", true);
                 break;
             case R.id.btnSix:
-                appendOnExpression("6",true);
+                appendOnExpression("6", true);
                 break;
             case R.id.btnSeven:
-                appendOnExpression("7",true);
+                appendOnExpression("7", true);
                 break;
             case R.id.btnEight:
-                appendOnExpression("8",true);
+                appendOnExpression("8", true);
                 break;
             case R.id.btnNine:
-                appendOnExpression("9",true);
+                appendOnExpression("9", true);
                 break;
             case R.id.btnPlus:
-                appendOnExpression("+",true);
+                appendOnExpression("+", false);
                 break;
             case R.id.btnMinus:
-                appendOnExpression("-",true);
+                appendOnExpression("-", false);
                 break;
             case R.id.btnMul:
-                appendOnExpression("*",true);
+                appendOnExpression("*", false);
                 break;
             case R.id.btnDivide:
-                appendOnExpression("/",true);
+                appendOnExpression("/", false);
                 break;
             case R.id.btnModule:
-                appendOnExpression("%",true);
+                appendOnExpression("%", false);
                 break;
             case R.id.btnEquals:
                 calculate();
                 break;
-            case R.id.btnIn:
-                appendOnExpression("(",true);
+            case R.id.btnStart:
+                appendOnExpression("(", false);
+                break;
+            case R.id.btnEnd:
+                appendOnExpression(")", false);
                 break;
             case R.id.btnClear:
-                binding.tvResult.setText("");
                 binding.tvMain.setText("");
                 break;
             case R.id.btnDot:
                 binding.tvMain.setText(binding.tvMain.getText() + ".");
                 break;
             case R.id.btnSingleClear:
-                if (binding.tvResult.getText().length() > 0) {
-                    CharSequence currentText = binding.tvMain.getText();
-                    binding.tvMain.setText(currentText.subSequence(0, currentText.length() - 1));
-                }
+                singleClear();
                 break;
+        }
+    }
+
+    private void singleClear() {
+        if (binding.tvResult.getText().length() > 0) {
+            CharSequence currentText = binding.tvMain.getText();
+            if (currentText.length() > 0) {
+                binding.tvMain.setText(currentText.subSequence(0, currentText.length() - 1));
+            } else {
+                Toast.makeText(getApplicationContext(), "All cleared", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "all cleared", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -155,21 +150,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             Expression expression = new ExpressionBuilder(binding.tvMain.getText().toString()).build();
             Double result = expression.evaluate();
-//            Long longResult = ;
-//            if(result.equals(Double.valueOf(longResult)))
-//                binding.tvMain.setText(String.valueOf(longResult));
-//            else
-                binding.tvResult.setText(String.valueOf(result));
+            binding.tvResult.setText(String.valueOf(result));
 
-        }catch (Exception e){
-            Log.d("Exception"," message : " + e.getMessage());
+        } catch (Exception e) {
+            Log.d("Exception", " message : " + e.getMessage());
         }
     }
 
 
-    private void appendOnExpression(String string, Boolean  canClear) {
+    private void appendOnExpression(String string, Boolean canClear) {
 
-        if(binding.tvResult.getText().length()>0){
+        if (binding.tvResult.getText().length() > 0) {
             binding.tvMain.setText("");
         }
         if (canClear) {
