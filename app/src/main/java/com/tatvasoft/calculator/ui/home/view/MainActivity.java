@@ -8,13 +8,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.facebook.stetho.Stetho;
-import com.facebook.stetho.okhttp.StethoInterceptor;
-import com.squareup.okhttp.OkHttpClient;
 import com.tatvasoft.calculator.R;
 import com.tatvasoft.calculator.adapter.HistoryAdapter;
 import com.tatvasoft.calculator.database.HistoryDatabase;
@@ -47,11 +43,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initControls() {
         initListeners();
+        onTextChange();
 
     }
 
     private void initListeners() {
-        historyDatabase=new HistoryDatabase(this);
+        historyDatabase = new HistoryDatabase(this);
 
         CommonUtils.stethoInitialize(getApplicationContext());
 
@@ -79,6 +76,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.btnClear.setOnClickListener(this);
 
         binding.btnHistory.setOnClickListener(this);
+
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void onTextChange() {
+        if (!(binding.tvMain.length() > 0)) {
+            int size = historyDatabase.listData().size();
+            if (size > 0) {
+                binding.tvResult.setText(historyDatabase.listData().get(size - 1).getExpression() + " = " + historyDatabase.listData().get(size - 1).getFinalAns());
+            }
+        }
+        binding.tvMain.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (!(charSequence.length() > 0)) {
+                    int size = historyDatabase.listData().size();
+                    if (size > 0) {
+                        binding.tvResult.setText(historyDatabase.listData().get(size - 1).getExpression() + " = " + historyDatabase.listData().get(size - 1).getFinalAns());
+                    }
+                }
+                if (charSequence.length() > 0) {
+                    if ((charSequence.charAt(i) == '+') || (charSequence.charAt(i) == '-') || (charSequence.charAt(i) == '/') || (charSequence.charAt(i) == 'x') || (charSequence.charAt(i) == '%')) {
+                        binding.tvMain.setText("");
+                        Toast.makeText(getApplicationContext(), "invalid input", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -132,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setText("%");
                 break;
             case R.id.btnEquals:
-                calculate();
+                calculate(binding.tvMain.getText().toString().trim());
                 break;
             case R.id.btnStart:
                 if (checkBracket) {
@@ -145,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btnClear:
                 binding.tvMain.setText("");
+                binding.tvResult.setText("");
                 break;
             case R.id.btnDot:
                 binding.tvMain.setText(binding.tvMain.getText() + ".");
@@ -162,8 +199,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivityForResult(new Intent(getApplicationContext(), HistoryActivity.class), 0);
     }
 
-    private void calculate() {
-        process = binding.tvMain.getText().toString().trim();
+    @SuppressLint("SetTextI18n")
+    private void calculate(String s) {
+        process = s;
 
         process = process.replaceAll("x", "*");
         process = process.replaceAll("%", "/100*");
@@ -175,12 +213,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             Scriptable scriptable = expression.initSafeStandardObjects();
             finalResult = expression.evaluateString(scriptable, process, "javascript", 1, null).toString();
-            historyDatabase.addBlogData(new HistoryModel(0,process,finalResult));
+            process = process.replaceAll(getString(R.string.percentage), "%");
+            historyDatabase.addBlogData(new HistoryModel(0, process, finalResult));
         } catch (Exception e) {
             finalResult = "0";
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-        binding.tvResult.setText(finalResult);
+        binding.tvResult.setText(process + " = " + finalResult);
     }
 
     private void singleClear() {
@@ -198,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @SuppressLint("SetTextI18n")
     public void setText(String value) {
         process = binding.tvMain.getText().toString();
         binding.tvMain.setText(process + value);
@@ -207,6 +247,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             binding.tvMain.append(value);
         }
     }
-
 
 }
