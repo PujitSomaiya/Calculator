@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,18 +12,31 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.facebook.stetho.Stetho;
+import com.facebook.stetho.okhttp.StethoInterceptor;
+import com.squareup.okhttp.OkHttpClient;
 import com.tatvasoft.calculator.R;
+import com.tatvasoft.calculator.adapter.HistoryAdapter;
+import com.tatvasoft.calculator.database.HistoryDatabase;
 import com.tatvasoft.calculator.databinding.ActivityMainBinding;
+import com.tatvasoft.calculator.ui.history.model.HistoryModel;
+import com.tatvasoft.calculator.ui.history.view.HistoryActivity;
+import com.tatvasoft.calculator.util.CommonUtils;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ActivityMainBinding binding;
-    private String percentage;
+    private HistoryDatabase historyDatabase;
+    private String process;
+    private boolean checkBracket = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +51,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initListeners() {
+        historyDatabase=new HistoryDatabase(this);
+
+        CommonUtils.stethoInitialize(getApplicationContext());
 
         binding.btnDot.setOnClickListener(this);
         binding.btnDivide.setOnClickListener(this);
@@ -59,8 +76,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.btnSingleClear.setOnClickListener(this);
         binding.btnModule.setOnClickListener(this);
         binding.btnStart.setOnClickListener(this);
-        binding.btnEnd.setOnClickListener(this);
         binding.btnClear.setOnClickListener(this);
+
+        binding.btnHistory.setOnClickListener(this);
     }
 
     @SuppressLint("SetTextI18n")
@@ -69,59 +87,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = view.getId();
         switch (id) {
             case R.id.btnZero:
-                appendOnExpression("0", true);
+                setText("0");
                 break;
             case R.id.btnOne:
-                appendOnExpression("1", true);
+                setText("1");
                 break;
             case R.id.btnTwo:
-                appendOnExpression("2", true);
+                setText("2");
                 break;
             case R.id.btnThree:
-                appendOnExpression("3", true);
+                setText("3");
                 break;
             case R.id.btnFour:
-                appendOnExpression("4", true);
+                setText("4");
                 break;
             case R.id.btnFive:
-                appendOnExpression("5", true);
+                setText("5");
                 break;
             case R.id.btnSix:
-                appendOnExpression("6", true);
+                setText("6");
                 break;
             case R.id.btnSeven:
-                appendOnExpression("7", true);
+                setText("7");
                 break;
             case R.id.btnEight:
-                appendOnExpression("8", true);
+                setText("8");
                 break;
             case R.id.btnNine:
-                appendOnExpression("9", true);
+                setText("9");
                 break;
             case R.id.btnPlus:
-                appendOnExpression("+", false);
+                setText("+");
                 break;
             case R.id.btnMinus:
-                appendOnExpression("-", false);
+                setText("-");
                 break;
             case R.id.btnMul:
-                appendOnExpression("*", false);
+                setText("x");
                 break;
             case R.id.btnDivide:
-                appendOnExpression("/", false);
+                setText("/");
                 break;
             case R.id.btnModule:
-                percentage="%";
-                appendOnExpression("%", false);
+                setText("%");
                 break;
             case R.id.btnEquals:
                 calculate();
                 break;
             case R.id.btnStart:
-                appendOnExpression("(", false);
-                break;
-            case R.id.btnEnd:
-                appendOnExpression(")", false);
+                if (checkBracket) {
+                    setText(")");
+                    checkBracket = false;
+                } else {
+                    setText("(");
+                    checkBracket = true;
+                }
                 break;
             case R.id.btnClear:
                 binding.tvMain.setText("");
@@ -132,11 +152,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btnSingleClear:
                 singleClear();
                 break;
+            case R.id.btnHistory:
+                showHistory();
+                break;
         }
     }
 
+    private void showHistory() {
+        startActivityForResult(new Intent(getApplicationContext(), HistoryActivity.class), 0);
+    }
+
+    private void calculate() {
+        process = binding.tvMain.getText().toString().trim();
+
+        process = process.replaceAll("x", "*");
+        process = process.replaceAll("%", "/100*");
+
+        Context expression = Context.enter();
+        expression.setOptimizationLevel(-1);
+        String finalResult = "";
+
+        try {
+            Scriptable scriptable = expression.initSafeStandardObjects();
+            finalResult = expression.evaluateString(scriptable, process, "javascript", 1, null).toString();
+            historyDatabase.addBlogData(new HistoryModel(0,process,finalResult));
+        } catch (Exception e) {
+            finalResult = "0";
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        binding.tvResult.setText(finalResult);
+    }
+
     private void singleClear() {
+//        checkBracket = !checkBracket;
         if (binding.tvMain.getText().length() > 0) {
+            checkBracket = !checkBracket;
             CharSequence currentText = binding.tvMain.getText();
             if (currentText.length() > 0) {
                 binding.tvMain.setText(currentText.subSequence(0, currentText.length() - 1));
@@ -148,86 +198,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void calculate() {
-        try {
-            Expression expression = new ExpressionBuilder(binding.tvMain.getText().toString()).build();
-            Double result = expression.evaluate();
-            long longResult =  (new Double(result)).longValue();;
-            if(result .equals(Double.valueOf(longResult)))
-                binding.tvResult.setText(String.valueOf(longResult));
-            else
-            binding.tvResult.setText(String.valueOf(result));
-        } catch (Exception e) {
-            Log.d("Exception", " message : " + e.getMessage());
+    public void setText(String value) {
+        process = binding.tvMain.getText().toString();
+        binding.tvMain.setText(process + value);
+        if (binding.tvResult.getText().length() > 0) {
+            binding.tvMain.setText("");
+            binding.tvResult.setText("");
+            binding.tvMain.append(value);
         }
     }
 
 
-    private void appendOnExpression(String string, Boolean canClear) {
-        if (string.equals("%")) {
-            if (percentage.equals("%")) {
-                String mainValue = binding.tvMain.getText().toString();
-                if (binding.tvResult.getText().length() > 0) {
-                    binding.tvMain.setText("");
-                }
-                if (canClear) {
-                    binding.tvResult.setText("");
-                    binding.tvMain.append("*" + string + ")/" + 100);
-                } else {
-                    binding.tvMain.setText("");
-//                    binding.tvMain.append(binding.tvResult.getText().toString());
-                    binding.tvMain.append("(" + mainValue);
-                    binding.tvResult.setText("");
-                }
-            } else {
-                String mainValue = binding.tvMain.getText().toString();
-                if (binding.tvResult.getText().length() > 0) {
-                    binding.tvMain.setText("");
-                }
-                if (canClear) {
-                    binding.tvResult.setText("");
-                    binding.tvMain.append("*" + string + ")/" + 100);
-                } else {
-                    binding.tvMain.setText("");
-//                    binding.tvMain.append(binding.tvResult.getText().toString());
-                    binding.tvMain.append("(" + mainValue);
-                    binding.tvResult.setText("");
-                }
-            }
-
-        }else{
-            if (percentage!=null) {
-                if (percentage.equals("%")) {
-                    String mainValue = binding.tvMain.getText().toString();
-                    if (binding.tvResult.getText().length() > 0) {
-                        binding.tvMain.setText("");
-                    }
-                    if (canClear) {
-                        binding.tvResult.setText("");
-                        binding.tvMain.append("*" + string + ")/" + 100);
-                    } else {
-                        binding.tvMain.setText("");
-//                    binding.tvMain.append(binding.tvResult.getText().toString());
-                        binding.tvMain.append("(" + mainValue);
-                        binding.tvResult.setText("");
-                }
-                    percentage=null;
-            }
-
-            } else {
-                String mainValue = binding.tvMain.getText().toString();
-                if (binding.tvResult.getText().length() > 0) {
-                    binding.tvMain.setText("");
-                }
-                if (canClear) {
-                    binding.tvResult.setText("");
-                    binding.tvMain.append(string);
-                } else {
-                    binding.tvMain.append(binding.tvResult.getText().toString());
-                    binding.tvMain.append( mainValue);
-                    binding.tvResult.setText("");
-                }
-            }
-        }
-    }
 }

@@ -17,4 +17,6 @@
     <string name="eight">8</string>
     <string name="nine">9</string>
     <string name="multiplication">X</string>
+    <string name="history">History</string>
+    <string name="all_clear">ALL CLEAR</string>
 </resources>
