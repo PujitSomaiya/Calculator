@@ -32,7 +32,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ActivityMainBinding binding;
     private HistoryDatabase historyDatabase;
     private String process;
-    private boolean checkBracket = false;
+    private boolean calculation = false;
+    private String addMOre = "";
+    private String extraMore = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.btnSingleClear.setOnClickListener(this);
         binding.btnModule.setOnClickListener(this);
         binding.btnStart.setOnClickListener(this);
+        binding.btnEnd.setOnClickListener(this);
         binding.btnClear.setOnClickListener(this);
 
         binding.btnHistory.setOnClickListener(this);
@@ -171,15 +174,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 calculate(binding.tvMain.getText().toString().trim());
                 break;
             case R.id.btnStart:
-                if (checkBracket) {
-                    setText(")");
-                    checkBracket = false;
-                } else {
-                    setText("(");
-                    checkBracket = true;
-                }
+                setText("(");
+                break;
+            case R.id.btnEnd:
+                setText(")");
                 break;
             case R.id.btnClear:
+                calculation=false;
+                addMOre="";
                 binding.tvMain.setText("");
                 binding.tvResult.setText("");
                 break;
@@ -213,19 +215,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             Scriptable scriptable = expression.initSafeStandardObjects();
             finalResult = expression.evaluateString(scriptable, process, "javascript", 1, null).toString();
-            process = process.replaceAll(getString(R.string.percentage), "%");
-            historyDatabase.addBlogData(new HistoryModel(0, process, finalResult));
+            if (calculation){
+                process=process+"+"+addMOre;
+                addMOre = expression.evaluateString(scriptable, process, "javascript", 1, null).toString();
+                binding.tvResult.setText(addMOre);
+            }else {
+                calculation=true;
+                addMOre=finalResult;
+                process = process.replaceAll(getString(R.string.percentage), "%");
+                historyDatabase.addBlogData(new HistoryModel(0, process, finalResult));
+                binding.tvResult.setText(process + " = " + finalResult);
+            }
+
         } catch (Exception e) {
             finalResult = "0";
+            binding.tvResult.setText(finalResult);
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-        binding.tvResult.setText(process + " = " + finalResult);
+
     }
 
     private void singleClear() {
-//        checkBracket = !checkBracket;
         if (binding.tvMain.getText().length() > 0) {
-            checkBracket = !checkBracket;
             CharSequence currentText = binding.tvMain.getText();
             if (currentText.length() > 0) {
                 binding.tvMain.setText(currentText.subSequence(0, currentText.length() - 1));
@@ -242,6 +253,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         process = binding.tvMain.getText().toString();
         binding.tvMain.setText(process + value);
         if (binding.tvResult.getText().length() > 0) {
+            calculation=false;
+            addMOre="";
             binding.tvMain.setText("");
             binding.tvResult.setText("");
             binding.tvMain.append(value);

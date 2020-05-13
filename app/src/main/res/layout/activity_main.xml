@@ -197,10 +197,20 @@
             style="@style/btnSymbol"
             android:layout_width="@dimen/dp_0"
             android:layout_height="@dimen/_50sdp"
-            android:text="( )"
+            android:text="("
+            app:layout_constraintBottom_toTopOf="@id/btnEight"
+            app:layout_constraintEnd_toStartOf="@id/btnEnd"
+            app:layout_constraintStart_toEndOf="@id/btnClear" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/btnEnd"
+            style="@style/btnSymbol"
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="@dimen/_50sdp"
+            android:text=")"
             app:layout_constraintBottom_toTopOf="@id/btnEight"
             app:layout_constraintEnd_toStartOf="@id/btnModule"
-            app:layout_constraintStart_toEndOf="@id/btnClear" />
+            app:layout_constraintStart_toEndOf="@id/btnStart" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/btnModule"
@@ -210,7 +220,7 @@
             android:text="%"
             app:layout_constraintBottom_toTopOf="@id/btnNine"
             app:layout_constraintEnd_toStartOf="@id/btnSingleClear"
-            app:layout_constraintStart_toEndOf="@id/btnStart" />
+            app:layout_constraintStart_toEndOf="@id/btnEnd" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/btnSingleClear"
