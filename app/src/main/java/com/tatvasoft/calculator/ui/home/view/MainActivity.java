@@ -33,8 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private HistoryDatabase historyDatabase;
     private String process;
     private boolean calculation = false;
+    private boolean clear = true;
     private String addMOre = "";
-    private String extraMore = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,10 +180,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setText(")");
                 break;
             case R.id.btnClear:
-                calculation=false;
-                addMOre="";
-                binding.tvMain.setText("");
-                binding.tvResult.setText("");
+                if (clear) {
+                    calculation = false;
+                    addMOre = "";
+                    binding.tvMain.setText("");
+                    clear = false;
+                } else {
+                    binding.tvResult.setText("");
+                }
                 break;
             case R.id.btnDot:
                 binding.tvMain.setText(binding.tvMain.getText() + ".");
@@ -215,13 +219,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             Scriptable scriptable = expression.initSafeStandardObjects();
             finalResult = expression.evaluateString(scriptable, process, "javascript", 1, null).toString();
-            if (calculation){
-                process=process+"+"+addMOre;
+            if (calculation) {
+                process = process + "+" + addMOre;
                 addMOre = expression.evaluateString(scriptable, process, "javascript", 1, null).toString();
                 binding.tvResult.setText(addMOre);
-            }else {
-                calculation=true;
-                addMOre=finalResult;
+            } else {
+                calculation = true;
+                addMOre = finalResult;
                 process = process.replaceAll(getString(R.string.percentage), "%");
                 historyDatabase.addBlogData(new HistoryModel(0, process, finalResult));
                 binding.tvResult.setText(process + " = " + finalResult);
@@ -235,16 +239,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void singleClear() {
         if (binding.tvMain.getText().length() > 0) {
             CharSequence currentText = binding.tvMain.getText();
             if (currentText.length() > 0) {
                 binding.tvMain.setText(currentText.subSequence(0, currentText.length() - 1));
             } else {
+                int size = historyDatabase.listData().size();
+                if (size > 0) {
+                    binding.tvResult.setText(historyDatabase.listData().get(size - 1).getExpression() + " = " + historyDatabase.listData().get(size - 1).getFinalAns());
+                }
                 Toast.makeText(getApplicationContext(), "All cleared", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(getApplicationContext(), "all cleared", Toast.LENGTH_SHORT).show();
+            int size = historyDatabase.listData().size();
+            if (size > 0) {
+                binding.tvResult.setText(historyDatabase.listData().get(size - 1).getExpression() + " = " + historyDatabase.listData().get(size - 1).getFinalAns());
+            }
+            Toast.makeText(getApplicationContext(), "All cleared", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -252,9 +265,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void setText(String value) {
         process = binding.tvMain.getText().toString();
         binding.tvMain.setText(process + value);
+        clear = true;
         if (binding.tvResult.getText().length() > 0) {
-            calculation=false;
-            addMOre="";
+            calculation = false;
+            addMOre = "";
             binding.tvMain.setText("");
             binding.tvResult.setText("");
             binding.tvMain.append(value);
