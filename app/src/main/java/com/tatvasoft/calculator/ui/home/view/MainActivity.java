@@ -22,6 +22,7 @@ import java.text.DecimalFormat;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ActivityMainBinding binding;
+    private String percentage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 appendOnExpression("/", false);
                 break;
             case R.id.btnModule:
+                percentage="%";
                 appendOnExpression("%", false);
                 break;
             case R.id.btnEquals:
@@ -162,17 +164,70 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void appendOnExpression(String string, Boolean canClear) {
+        if (string.equals("%")) {
+            if (percentage.equals("%")) {
+                String mainValue = binding.tvMain.getText().toString();
+                if (binding.tvResult.getText().length() > 0) {
+                    binding.tvMain.setText("");
+                }
+                if (canClear) {
+                    binding.tvResult.setText("");
+                    binding.tvMain.append("*" + string + ")/" + 100);
+                } else {
+                    binding.tvMain.setText("");
+//                    binding.tvMain.append(binding.tvResult.getText().toString());
+                    binding.tvMain.append("(" + mainValue);
+                    binding.tvResult.setText("");
+                }
+            } else {
+                String mainValue = binding.tvMain.getText().toString();
+                if (binding.tvResult.getText().length() > 0) {
+                    binding.tvMain.setText("");
+                }
+                if (canClear) {
+                    binding.tvResult.setText("");
+                    binding.tvMain.append("*" + string + ")/" + 100);
+                } else {
+                    binding.tvMain.setText("");
+//                    binding.tvMain.append(binding.tvResult.getText().toString());
+                    binding.tvMain.append("(" + mainValue);
+                    binding.tvResult.setText("");
+                }
+            }
 
-        if (binding.tvResult.getText().length() > 0) {
-            binding.tvMain.setText("");
-        }
-        if (canClear) {
-            binding.tvResult.setText("");
-            binding.tvMain.append(string);
-        } else {
-            binding.tvMain.append(binding.tvResult.getText().toString());
-            binding.tvMain.append(string);
-            binding.tvResult.setText("");
+        }else{
+            if (percentage!=null) {
+                if (percentage.equals("%")) {
+                    String mainValue = binding.tvMain.getText().toString();
+                    if (binding.tvResult.getText().length() > 0) {
+                        binding.tvMain.setText("");
+                    }
+                    if (canClear) {
+                        binding.tvResult.setText("");
+                        binding.tvMain.append("*" + string + ")/" + 100);
+                    } else {
+                        binding.tvMain.setText("");
+//                    binding.tvMain.append(binding.tvResult.getText().toString());
+                        binding.tvMain.append("(" + mainValue);
+                        binding.tvResult.setText("");
+                }
+                    percentage=null;
+            }
+
+            } else {
+                String mainValue = binding.tvMain.getText().toString();
+                if (binding.tvResult.getText().length() > 0) {
+                    binding.tvMain.setText("");
+                }
+                if (canClear) {
+                    binding.tvResult.setText("");
+                    binding.tvMain.append(string);
+                } else {
+                    binding.tvMain.append(binding.tvResult.getText().toString());
+                    binding.tvMain.append( mainValue);
+                    binding.tvResult.setText("");
+                }
+            }
         }
     }
 }
