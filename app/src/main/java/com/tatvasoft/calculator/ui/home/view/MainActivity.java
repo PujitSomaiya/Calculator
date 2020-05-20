@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(getApplicationContext(), "All cleared", Toast.LENGTH_SHORT).show();
         }
     }
-
+//push to master
     @SuppressLint("SetTextI18n")
     public void setText(String value) {
         process = binding.tvMain.getText().toString();
